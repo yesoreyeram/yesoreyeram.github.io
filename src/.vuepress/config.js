@@ -1,7 +1,7 @@
 module.exports = {
     title: `sriramajeyam.com`,
     base: '/',
-    dest: './docs',
+    dest: './.staging',
     themeConfig: {
         nav: [
             {

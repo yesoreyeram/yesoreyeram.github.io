@@ -1,15 +1,21 @@
 #!/bin/sh
 
-echo "Building sriramajeyam.com";
+echo "Install Dependencies";
+yarn install --frozen-lockfile;
 
-yarn build;
-
-rm -rf  assets/;
+echo "Cleanup";
+rm -rf .staging/;
+rm -rf assets/;
 rm -rf blog/;
 rm *.html;
 
-cp -r docs/* .;
+echo "Building sriramajeyam.com";
+yarn build;
 
-rm -rf docs/;
+echo "Deploy";
+cp -r .staging/* .;
+
+echo "Post build cleanup";
+rm -rf .staging/;
 
 exit 0;
