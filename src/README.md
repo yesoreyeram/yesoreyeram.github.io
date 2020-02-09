@@ -1,6 +1,6 @@
 # Sriramajeyam Sugumaran
 
-Full stack web developer
+Full stack web developer from Chennai, India. Currently living in London, United Kingdom.
 
 [Github](https://github.com/yesoreyeram)
 
