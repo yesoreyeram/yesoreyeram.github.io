@@ -7,3 +7,5 @@ Full stack web developer
 [LinkedIn](https://www.linkedin.com/in/sriramajeyam/)
 
 [Stack Overflow](https://stackoverflow.com/users/1576253/sriramajeyam-sugumaran)
+
+[Twitter](https://twitter.com/yesoreyeram)
