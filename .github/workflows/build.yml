@@ -20,5 +20,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
-    - run: ./build.sh
-    - run: ./publish.sh
+    - run: chmod +x ./build.sh && ./build.sh
+    - run: chmod +x ./publish.sh && ./publish.sh
