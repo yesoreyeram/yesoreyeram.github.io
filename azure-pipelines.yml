@@ -5,7 +5,51 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+  
   - script: |
       echo "Building sriramajeyam.com";
     displayName: 'Build sriramajeyam.com'
+  
+  - task: NodeTool@0 
+    inputs:
+      versionSpec: '10.x'
+
+  - task: YarnInstaller@3
+    inputs:
+      versionSpec: '1.x'
+    
+  - task: Yarn@3
+    inputs:
+      arguments: 'install'
+
+  - task: Yarn@3
+    displayName: Yarn Build
+    inputs:
+      arguments: 'build'
+
+  # - script: |
+  #     npm run-script tslint;
+  #     exit $?;
+  #   displayName: "Lint Typescript"
+    
+  # - script: |
+  #     npm run-script build-ts;
+  #     exit $?;
+  #   displayName: "Build Typescript"
+  
+  # - script: |
+  #     npm test;
+  #     exit $?;
+  #   displayName: "NPM Test"
+
+  # - task: PublishTestResults@2
+  #   condition: succeededOrFailed()
+  #   inputs:
+  #     testRunner: JUnit
+  #     testResultsFiles: 'junit.xml'
+  
+  # - task: PublishCodeCoverageResults@1
+  #   inputs: 
+  #     codeCoverageTool: Cobertura
+  #     summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
   
