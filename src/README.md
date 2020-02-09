@@ -1,11 +1,14 @@
-# Sriramajeyam Sugumaran
+---
+home : true
+title: Sriramajeyam's Site
+heroText: Sriramajeyam Sugumaran
+tagline: welcome to my site
+---
 
-Full stack web developer from Chennai, India. Currently living in London, United Kingdom.
+Hello..! Welcome to my site. I am [**Sriramajeyam Sugumaran**](https://g.co/kgs/ZonduH). A full stack web developer from Chennai, India. Currently living in London, United Kingdom.
 
-[Github](https://github.com/yesoreyeram)
-
-[LinkedIn](https://www.linkedin.com/in/sriramajeyam/)
-
-[Stack Overflow](https://stackoverflow.com/users/1576253/sriramajeyam-sugumaran)
-
-[Twitter](https://twitter.com/yesoreyeram)
+[Github](https://github.com/yesoreyeram) |
+[LinkedIn](https://www.linkedin.com/in/sriramajeyam/) |
+[Stack Overflow](https://stackoverflow.com/users/1576253/sriramajeyam-sugumaran) |
+[Twitter](https://twitter.com/yesoreyeram) |
+[Others](https://google.com/search?q=yesoreyeram)
