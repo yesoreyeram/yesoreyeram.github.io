@@ -25,11 +25,11 @@ jobs:
     - run: npm test
       env:
         CI: true
-    - run: git status
+    - run: chmod +x ./build.sh && ./build.sh
     - run: echo $(date) > LAST_UPDATED
     - run: git config --global user.email "actions@github.com"
     - run: git config --global user.name "Github Actions"
-    - run: git status
     - run: git add .
     - run: git commit -m "Commit from Github Actions"
     - run: git push
+    - run: git status
