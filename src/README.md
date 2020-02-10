@@ -9,7 +9,7 @@ tagline:
 
 Hello..! Welcome to my site. I am [**Sriramajeyam Sugumaran**](https://g.co/kgs/ZonduH), A full stack web developer from Chennai, India. Currently living in London, United Kingdom. 
 
-I've been doing web development over a decade. My current interests in the web technologies are Javascript, NodeJS, Performance, VueJS, Grafana, Azure & Devops.
+I've been doing web development over a decade. My current interests in the web technologies are Javascript, NodeJS, VueJS, Grafana, Performance Optimization, SRE, Azure & Devops.
 
 #### Recent Posts
 
