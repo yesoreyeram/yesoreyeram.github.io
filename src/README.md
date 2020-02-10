@@ -11,6 +11,11 @@ Hello..! Welcome to my site. I am [**Sriramajeyam Sugumaran**](https://g.co/kgs/
 
 I've been doing web development over a decade. My current interests in the web technologies are Javascript, NodeJS, Performance, VueJS, Grafana, Azure & Devops.
 
+#### Recent Posts
+
+<BlogList :limit="10"/>
+
+#### Say Hello..!
 
 [Github](https://github.com/yesoreyeram) |
 [LinkedIn](https://www.linkedin.com/in/sriramajeyam/) |
