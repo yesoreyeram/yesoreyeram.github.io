@@ -1,5 +1,5 @@
 module.exports = {
-    title: `sriramajeyam.com`,
+    title: `sriramajeyam`,
     base: '/',
     dest: './.staging',
     themeConfig: {
