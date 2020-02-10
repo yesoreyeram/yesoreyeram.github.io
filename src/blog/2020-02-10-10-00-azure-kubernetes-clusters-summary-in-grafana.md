@@ -1,6 +1,6 @@
 ---
-title : Azure kubernetes clusters summary
-permalink: /blog/azure-kubernetes-clusters-summary.html
+title : Azure Kubernetes clusters summary in Grafana
+permalink: /blog/azure-kubernetes-clusters-summary-in-grafana.html
 type: blogpost
 datecreated : 2020-02-10 10:00
 category : tech
