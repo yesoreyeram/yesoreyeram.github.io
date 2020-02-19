@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Azure Policy to restrict personal email addresses in action groups | sriramajeyam</title>
+    <meta name="description" content="">
+    <meta name="generator" content="VuePress 1.3.0">
+    
+    
+    <link rel="preload" href="/assets/css/0.styles.039f549c.css" as="style"><link rel="preload" href="/assets/js/app.64981fd5.js" as="script"><link rel="preload" href="/assets/js/2.1b5e1337.js" as="script"><link rel="preload" href="/assets/js/9.6cc8da6c.js" as="script"><link rel="preload" href="/assets/js/7.ca7c4aa2.js" as="script"><link rel="prefetch" href="/assets/js/10.63c3a5c1.js"><link rel="prefetch" href="/assets/js/11.1a2a9884.js"><link rel="prefetch" href="/assets/js/3.8b03b7a5.js"><link rel="prefetch" href="/assets/js/4.043a5e33.js"><link rel="prefetch" href="/assets/js/5.b60a90cd.js"><link rel="prefetch" href="/assets/js/6.3f8f84ab.js"><link rel="prefetch" href="/assets/js/8.8e7aabae.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.039f549c.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container no-sidebar"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><!----> <span class="site-name">sriramajeyam</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div> <!----></nav>  <!----> </aside> <main class="page"> <div class="theme-default-content content__default"><h2 id="azure-policy-action-groups-problem"><a href="#azure-policy-action-groups-problem" class="header-anchor">#</a> Azure Policy &amp; Action Groups Problem</h2> <p>In enterprises, thousands of alerts will be setup by multiple teams. Each team might have their own subscriptions and own levels of access to create resources. So they can create any type of <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/platform/action-groups" target="_blank" rel="noopener noreferrer">Azure action Group<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a> with any properties. In such scenarios, you might want to have some control over what type of alerts been setup and whom they have been sent. Also we don't want our confidential alerts been sent to random / personal email addresses.</p> <p>Recently I started writing policies in Azure and I am already in love with that. Azure Policies used to enforce certain rules over your azure resources creation.
+If you don't know much about azure policy, read it in the <a href="https://docs.microsoft.com/en-us/azure/governance/policy/overview" target="_blank" rel="noopener noreferrer">official documentation site<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>. With azure policy, you will have full control of what is being created in your subscriptions. By default azure gives you tons of templated policies. Also you can create your own custom policies based on your needs.</p> <p>So, We are going to solve our problem of blocking non standard email addresses using Azure policy. Our policy will make sure only allowed email addresses are used in the action groups.</p> <h2 id="block-personal-email-addresses-in-azure-action-group"><a href="#block-personal-email-addresses-in-azure-action-group" class="header-anchor">#</a> Block personal email addresses in Azure Action Group</h2> <p>First, lets define what email addresses we want support. In my case, following are the only valid email addresses.</p> <ul><li>Any email addresses like <code>*@mycompany.com</code></li> <li>Any email addresses like <code>*@MYCOMPANY.onmicrosoft.com</code></li> <li>Any email addresses like <code>@mycompany.slack.com</code></li> <li>One of <code>mycompany@mythirdparty1.com</code>, <code>my-company@mythirdparty2.com</code></li></ul> <p>We should block creation of action groups if any other email addresses present. Example, If someone tries to create action group with email address<code>mycompany@gmail.com</code> , then block it.</p> <p>Let's translate this requirement into azure policy.  The critical part of the policy is given below. This checks if the total email addresses not equals to the email addresses not matching the rules. So, we can deny it.</p> <div class="language-json extra-class"><pre class="language-json"><code><span class="token punctuation">{</span>
+    <span class="token property">&quot;allOf&quot;</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+            <span class="token property">&quot;count&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*]&quot;</span><span class="token punctuation">,</span>
+                <span class="token property">&quot;where&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                    <span class="token property">&quot;anyOf&quot;</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+                        <span class="token punctuation">{</span>
+                            <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                            <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@mycompany.com&quot;</span>
+                        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                        <span class="token punctuation">{</span>
+                            <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                            <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@MYCOMPANY.onmicrosoft.com&quot;</span>
+                        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                        <span class="token punctuation">{</span>
+                            <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                            <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@mycompany.slack.com&quot;</span>
+                        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                        <span class="token punctuation">{</span>
+                            <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                            <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;mycompany@mythirdparty1.com&quot;</span>
+                        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                        <span class="token punctuation">{</span>
+                            <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                            <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;my-company@mythirdparty2.com&quot;</span>
+                        <span class="token punctuation">}</span>
+                    <span class="token punctuation">]</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token property">&quot;notequals&quot;</span><span class="token operator">:</span> <span class="token string">&quot;[length(field('Microsoft.Insights/actiongroups/emailReceivers[*]'))]&quot;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>My entire policy looks like this</p> <div class="language-json extra-class"><pre class="language-json"><code><span class="token punctuation">{</span>
+    <span class="token property">&quot;properties&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">&quot;mode&quot;</span><span class="token operator">:</span> <span class="token string">&quot;all&quot;</span><span class="token punctuation">,</span>
+        <span class="token property">&quot;displayName&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Deny personal Email address in action group&quot;</span><span class="token punctuation">,</span>
+        <span class="token property">&quot;description&quot;</span><span class="token operator">:</span> <span class="token string">&quot;This policy denies personal Email addresses in action groups&quot;</span><span class="token punctuation">,</span>
+        <span class="token property">&quot;policyRule&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+            <span class="token property">&quot;if&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token property">&quot;allOf&quot;</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+                    <span class="token punctuation">{</span>
+                        <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;type&quot;</span><span class="token punctuation">,</span>
+                        <span class="token property">&quot;equals&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actionGroups&quot;</span>
+                    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">{</span>
+                        <span class="token property">&quot;allOf&quot;</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+                            <span class="token punctuation">{</span>
+                                <span class="token property">&quot;count&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                                    <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*]&quot;</span><span class="token punctuation">,</span>
+                                    <span class="token property">&quot;where&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                                        <span class="token property">&quot;anyOf&quot;</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+                                            <span class="token punctuation">{</span>
+                                                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                                                <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@mycompany.com&quot;</span>
+                                            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                                            <span class="token punctuation">{</span>
+                                                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                                                <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@MYCOMPANY.onmicrosoft.com&quot;</span>
+                                            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                                            <span class="token punctuation">{</span>
+                                                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                                                <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;*@mycompany.slack.com&quot;</span>
+                                            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                                            <span class="token punctuation">{</span>
+                                                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                                                <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;mycompany@mythirdparty1.com&quot;</span>
+                                            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                                            <span class="token punctuation">{</span>
+                                                <span class="token property">&quot;field&quot;</span><span class="token operator">:</span> <span class="token string">&quot;Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress&quot;</span><span class="token punctuation">,</span>
+                                                <span class="token property">&quot;like&quot;</span><span class="token operator">:</span> <span class="token string">&quot;my-company@mythirdparty2.com&quot;</span>
+                                            <span class="token punctuation">}</span>
+                                        <span class="token punctuation">]</span>
+                                    <span class="token punctuation">}</span>
+                                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                                <span class="token property">&quot;notequals&quot;</span><span class="token operator">:</span> <span class="token string">&quot;[length(field('Microsoft.Insights/actiongroups/emailReceivers[*]'))]&quot;</span>
+                            <span class="token punctuation">}</span>
+                        <span class="token punctuation">]</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">]</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token property">&quot;then&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token property">&quot;effect&quot;</span><span class="token operator">:</span> <span class="token string">&quot;deny&quot;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token property">&quot;parameters&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token property">&quot;metadata&quot;</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>I hope this post gives you some idea of what can be achieved with the policies and now you know how to block non standard email addresses in Action Groups. You can extend this policy to validate other properties like phone numbers, web hook addresses etc.</p> <div><br>
+  Cheers, <br> <b>Sriram</b></div></div> <footer class="page-edit"><!----> <!----></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.64981fd5.js" defer></script><script src="/assets/js/2.1b5e1337.js" defer></script><script src="/assets/js/9.6cc8da6c.js" defer></script><script src="/assets/js/7.ca7c4aa2.js" defer></script>
+  </body>
+</html>
