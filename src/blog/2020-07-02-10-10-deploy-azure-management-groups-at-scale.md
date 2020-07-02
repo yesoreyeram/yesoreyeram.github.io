@@ -14,6 +14,10 @@ tags :
     - devops
 ---
 
+## Deploy Azure Management Groups at scale using Azure Devops
+
+![image](https://user-images.githubusercontent.com/153843/86389464-43608b80-bc8e-11ea-9b28-830efca7ea6e.png)
+
 When working with 100s of Azure subscriptions, you may need to organize them into groups. When you group your subscriptions in to groups, you can assign roles, assign polices and manage your subscriptions easily. In this post, we will be using **Azure Management Groups** to organize the subscriptions and we will be using Azure Devops to deploy these templates.
 
 [Source Code available here](https://github.com/yesoreyeram/azure-deploy)
