@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Deploy Azure management groups at Scale using Azure Devops | sriramajeyam</title>
+    <meta name="description" content="">
+    <meta name="generator" content="VuePress 1.3.0">
+    
+    
+    <link rel="preload" href="/assets/css/0.styles.039f549c.css" as="style"><link rel="preload" href="/assets/js/app.d14d625b.js" as="script"><link rel="preload" href="/assets/js/2.1b5e1337.js" as="script"><link rel="preload" href="/assets/js/10.952ffb68.js" as="script"><link rel="preload" href="/assets/js/7.c466a33f.js" as="script"><link rel="prefetch" href="/assets/js/11.dc9d0669.js"><link rel="prefetch" href="/assets/js/12.dc559e29.js"><link rel="prefetch" href="/assets/js/13.6d5e4273.js"><link rel="prefetch" href="/assets/js/3.8b03b7a5.js"><link rel="prefetch" href="/assets/js/4.1d4a6d8a.js"><link rel="prefetch" href="/assets/js/5.b60a90cd.js"><link rel="prefetch" href="/assets/js/6.3f8f84ab.js"><link rel="prefetch" href="/assets/js/8.6493389b.js"><link rel="prefetch" href="/assets/js/9.6cc8da6c.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.039f549c.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container no-sidebar"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><!----> <span class="site-name">sriramajeyam</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div> <!----></nav>  <!----> </aside> <main class="page"> <div class="theme-default-content content__default"><p>When working with 100s of Azure subscriptions, you may need to organize them into groups. When you group your subscriptions in to groups, you can assign roles, assign polices and manage your subscriptions easily. In this post, we will be using <strong>Azure Management Groups</strong> to organize the subscriptions and we will be using Azure Devops to deploy these templates.</p> <p><a href="https://github.com/yesoreyeram/azure-deploy" target="_blank" rel="noopener noreferrer">Source Code available here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p> <p><a href="https://sriramajeyam.visualstudio.com/azure-deploy/_build?definitionId=7" target="_blank" rel="noopener noreferrer">Pipelines Available here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p> <h3 id="management-group-structure-definition"><a href="#management-group-structure-definition" class="header-anchor">#</a> Management Group Structure Definition</h3> <p>For the demo, I have created 10 subscriptions and I want to group them as follows.</p> <ul><li>Tenant Management Group
+<ul><li>Hello ( Management Group )
+<ul><li>Hello Platforms ( Management Group )
+<ul><li>Hello Platforms Prod ( Management Group )
+<ul><li>3 x Subscriptions</li></ul></li> <li>Hello Platforms NonProd ( Management Group )
+<ul><li>2 x Subscriptions</li></ul></li></ul></li> <li>Hello Payments ( Management Group )
+<ul><li>Hello Payments Prod ( Management Group )
+<ul><li>2 x Subscriptions</li></ul></li> <li>Hello Payments NonProd ( Management Group )
+<ul><li>3 x Subscriptions</li></ul></li></ul></li></ul></li></ul></li></ul> <p>Once I created the management groups, I would like to move my subscriptions into it accordingly. Also, I am interested to assign tags to my subscriptions and setup budget alerts to all the subscriptions. We will be using Azure Devops Pipelines to deploy this.</p> <h3 id="connection-setup"><a href="#connection-setup" class="header-anchor">#</a> Connection Setup</h3> <p>First step is to create a SPN with <code>Contributor</code> and <code>User Access Administrator</code> role at tenant level as mentioned <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-tenant#required-access" target="_blank" rel="noopener noreferrer">here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>. This can be done using the following command</p> <p><code>az role assignment create --assignee &quot;SPN_CLIENT_ID_GOES_HERE&quot; --scope &quot;/&quot; --role &quot;Contributor&quot;</code></p> <p><code>az role assignment create --assignee &quot;SPN_CLIENT_ID_GOES_HERE&quot; --scope &quot;/&quot; --role &quot;User Access Administrator&quot;</code></p> <p>As mentioned in the document, this should be executed by <strong>Global Admins</strong> who also have <strong>User Access Administrator</strong> access at root level.</p> <p>Once the SPN is created, Create the corresponding <strong>Service Connection</strong> in Azure Devops. Azure Resource Manager Service connection is created using <strong>Management Group</strong> level scope. Specify your Tenant ID as the management group id / Name. For the demo, I have created a service connection with the name <code>yesoreyeram-demo-demo-tenant-contributor</code></p> <h3 id="pipeline-setup"><a href="#pipeline-setup" class="header-anchor">#</a> Pipeline Setup</h3> <p>Azure devops pipeline was created using the Template available <a href="https://github.com/yesoreyeram/azure-deploy/blob/master/azure-pipelines/tenant_with_management_groups.yml" target="_blank" rel="noopener noreferrer">here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>. The pipeline has two stages</p> <ul><li>Build
+<ul><li>Build artifacts</li></ul></li> <li>Deploy
+<ul><li>Deploy to environment called <code>tenant-demo</code> and the service connection <code>yesoreyeram-demo-demo-tenant-contributor</code>.</li></ul></li></ul> <p>At the time of writing, Azure devops resource manager doesn't support tenant level deployment. So as a workaround, I am using <strong>AzureCLI@2</strong> task.</p> <h3 id="template-walk-through"><a href="#template-walk-through" class="header-anchor">#</a> Template walk-through</h3> <p>Our ARM template which is defined <a href="https://github.com/yesoreyeram/azure-deploy/blob/master/arm-templates/tenant_with_management_groups.json" target="_blank" rel="noopener noreferrer">here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>, does the following things.</p> <ul><li>Create a root management group</li> <li>Create child management group hierarchy</li> <li>Assign subscriptions to the management groups</li> <li>Setup Tags and Budget alerts for all the subscriptions</li></ul> <h3 id="create-root-management-group"><a href="#create-root-management-group" class="header-anchor">#</a> Create root management group</h3> <p>Template expects a parameter called <code>RootManagmentGroup</code> which will be used as root management group. This is created using the following template.</p> <div class="language- extra-class"><pre class="language-text"><code>{
+    &quot;type&quot;: &quot;Microsoft.Management/managementGroups&quot;,
+    &quot;apiVersion&quot;: &quot;2020-02-01&quot;,
+    &quot;name&quot;: &quot;[parameters('RootManagmentGroup')]&quot;,
+    &quot;properties&quot;: {
+        &quot;displayName&quot;: &quot;[parameters('RootManagmentGroup')]&quot;
+    }
+}
+</code></pre></div><h3 id="create-child-management-hierarchy"><a href="#create-child-management-hierarchy" class="header-anchor">#</a> Create Child management hierarchy</h3> <p>Hierarchy of the child management groups are passed to the template as a parameter <code>ManagementGroups</code>. The parameter is an array of management groups. Structure of the management group parameter is given below.</p> <div class="language- extra-class"><pre class="language-text"><code>{
+    &quot;ManagementGroups&quot;: {
+        &quot;type&quot;: &quot;array&quot;,
+        &quot;defaultValue&quot;: [
+            { &quot;Name&quot;: &quot;Platforms Hello&quot;, &quot;Id&quot;: &quot;HelloPlatforms&quot;, &quot;ParentManagementGroupId&quot;: &quot;Hello&quot; },
+            { &quot;Name&quot;: &quot;Platforms Hello Prod&quot;, &quot;Id&quot;: &quot;HelloPlatformsProd&quot;, &quot;ParentManagementGroupId&quot;: &quot;HelloPlatforms&quot; },
+            { &quot;Name&quot;: &quot;Platforms Hello NonProd&quot;, &quot;Id&quot;: &quot;HelloPlatformsNonProd&quot;, &quot;ParentManagementGroupId&quot;: &quot;HelloPlatforms&quot; },
+            { &quot;Name&quot;: &quot;Payments Hello&quot;, &quot;Id&quot;: &quot;HelloPayments&quot;, &quot;ParentManagementGroupId&quot;: &quot;Hello&quot;},
+            { &quot;Name&quot;: &quot;Payments Hello Opex&quot;, &quot;Id&quot;: &quot;HelloPaymentsOpex&quot;, &quot;ParentManagementGroupId&quot;: &quot;HelloPayments&quot; },
+            { &quot;Name&quot;: &quot;Payments Hello Capex&quot;, &quot;Id&quot;: &quot;HelloPaymentsCapex&quot;, &quot;ParentManagementGroupId&quot;: &quot;HelloPayments&quot;}
+        ]
+    }
+}
+</code></pre></div><p>All the management groups and their parents are defined in the hierarchy. Then using <code>copy</code> method of the ARM template, each management group is created as shown below</p> <div class="language- extra-class"><pre class="language-text"><code>{
+        &quot;type&quot;: &quot;Microsoft.Management/managementGroups&quot;,
+        &quot;apiVersion&quot;: &quot;2020-02-01&quot;,
+        &quot;name&quot;: &quot;[parameters('ManagementGroups')[copyIndex()].Id]&quot;,
+        &quot;dependsOn&quot;: [&quot;[parameters('ManagementGroups')[copyIndex()].ParentManagementGroupId]&quot;],
+        &quot;copy&quot;: {
+            &quot;name&quot;: &quot;managmentgroups&quot;,
+            &quot;count&quot;: &quot;[length(parameters('ManagementGroups'))]&quot;
+        },
+        &quot;properties&quot;: {
+            &quot;displayName&quot;: &quot;[parameters('ManagementGroups')[copyIndex()].Name]&quot;,
+            &quot;details&quot;: {
+                &quot;parent&quot;: {
+                    &quot;id&quot;: &quot;[tenantResourceId('Microsoft.Management/managementGroups', parameters('ManagementGroups')[copyIndex()].ParentManagementGroupId )]&quot;
+                }
+            }
+        }
+    }
+</code></pre></div><h3 id="assignment-of-subscriptions-to-the-management-groups"><a href="#assignment-of-subscriptions-to-the-management-groups" class="header-anchor">#</a> Assignment of subscriptions to the management groups.</h3> <p>All our 10 subscriptions will be moved to corresponding management groups. To achieve this, we are passing the list of subscriptions to the template as parameter. The structure of the `` param is given below.</p> <div class="language- extra-class"><pre class="language-text"><code>{
+    &quot;subscriptions&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;defaultValue&quot;: [
+                { &quot;SubscriptionId&quot;: &quot;0b65b765-1294-4e4f-9dca-b513ef0ac3b9&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPlatformsProd&quot;, &quot;SubscriptionName&quot;: &quot;HelloMarketplace&quot;, &quot;PlatformName&quot;: &quot;Marketplace&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Production&quot;, &quot;CostType&quot;:&quot;Opex&quot; , &quot;MonthlyBudget&quot;: 30000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;1f7c433c-e913-42bb-9f16-ee54cf5913b9&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPlatformsProd&quot;, &quot;SubscriptionName&quot;: &quot;HelloOrders&quot;, &quot;PlatformName&quot;: &quot;Orders&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Production&quot;, &quot;CostType&quot;:&quot;Opex&quot; , &quot;MonthlyBudget&quot;: 40000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;fc2be19c-f9f0-420d-9ccc-b175e3e5498e&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPlatformsProd&quot;, &quot;SubscriptionName&quot;: &quot;HelloPlatformEngineering&quot;, &quot;PlatformName&quot;: &quot;Engineering&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Production&quot;, &quot;CostType&quot;:&quot;Opex&quot; , &quot;MonthlyBudget&quot;: 20000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;bc3d2d69-555c-4678-a68f-34085833d9ce&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPlatformsNonProd&quot;, &quot;SubscriptionName&quot;: &quot;HelloMarketplaceNonProd&quot;, &quot;PlatformName&quot;: &quot;Marketplace&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Non-Production&quot;, &quot;CostType&quot;:&quot;Capex&quot; , &quot;MonthlyBudget&quot;: 2000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;61efcc2f-f2ce-4eae-915b-656950cae015&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPlatformsNonProd&quot;, &quot;SubscriptionName&quot;: &quot;HelloAppsNonProd&quot;, &quot;PlatformName&quot;: &quot;Apps&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Non-Production&quot;, &quot;CostType&quot;:&quot;Capex&quot; , &quot;MonthlyBudget&quot;: 2000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;40adf8ce-e2ea-49b1-a84e-e17f98119729&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPaymentsOpex&quot;, &quot;SubscriptionName&quot;: &quot;HelloFinance&quot;, &quot;PlatformName&quot;: &quot;Finance&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Production&quot;, &quot;CostType&quot;:&quot;Opex&quot; , &quot;MonthlyBudget&quot;: 50000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;c365c73b-1aab-4a9b-ac31-4b8bcf48fbdc&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPaymentsOpex&quot;, &quot;SubscriptionName&quot;: &quot;HelloPaymentsSecure&quot;, &quot;PlatformName&quot;: &quot;Payments&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Production&quot;, &quot;CostType&quot;:&quot;Opex&quot; , &quot;MonthlyBudget&quot;: 30000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;53cd1729-8cf8-4fc7-b648-3017a8f0be0b&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPaymentsCapex&quot;, &quot;SubscriptionName&quot;: &quot;HelloPaymentsDev&quot;, &quot;PlatformName&quot;: &quot;Payments&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Non-Production&quot;, &quot;CostType&quot;:&quot;Capex&quot; , &quot;MonthlyBudget&quot;: 3000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;857ab2c1-be7c-408d-b463-43b08d866f33&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPaymentsCapex&quot;, &quot;SubscriptionName&quot;: &quot;HelloPaymentsNonProd&quot;, &quot;PlatformName&quot;: &quot;Payments&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Non-Production&quot;, &quot;CostType&quot;:&quot;Capex&quot; , &quot;MonthlyBudget&quot;: 1000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;]},
+                { &quot;SubscriptionId&quot;: &quot;dd47879e-07fe-4c27-8489-40ff43dce93b&quot;, &quot;ManagementGroupId&quot;: &quot;HelloPaymentsCapex&quot;, &quot;SubscriptionName&quot;: &quot;HelloPaymentsSecureNonProd&quot;, &quot;PlatformName&quot;: &quot;Payments&quot;, &quot;ContactEmail&quot;:&quot;noreply@foo.com&quot;, &quot;Environment&quot;:&quot;Non-Production&quot;, &quot;CostType&quot;:&quot;Capex&quot;, &quot;MonthlyBudget&quot;: 3000, &quot;CostAlertsEmail&quot;:[&quot;noreply@foo.com&quot;] }
+            ]
+        }
+}
+</code></pre></div><p>The key here is <code>SubscriptionId</code> and <code>ManagementGroupId</code>.  Based on the two properties, all the subscriptions moved to corresponding management groups as shown below.</p> <div class="language- extra-class"><pre class="language-text"><code> {
+        &quot;type&quot;: &quot;Microsoft.Management/managementGroups/subscriptions&quot;,
+        &quot;apiVersion&quot;: &quot;2020-02-01&quot;,
+        &quot;name&quot;: &quot;[concat( parameters('subscriptions')[copyIndex()].ManagementGroupId ,'/', parameters('subscriptions')[copyIndex()].SubscriptionId  )]&quot;,
+        &quot;dependsOn&quot;: [
+            &quot;[parameters('subscriptions')[copyIndex()].ManagementGroupId]&quot;
+        ],
+        &quot;copy&quot;: {
+            &quot;name&quot;: &quot;subscriptions_mgmgt_group_association&quot;,
+            &quot;count&quot;: &quot;[length(parameters('subscriptions'))]&quot;
+        },
+        &quot;properties&quot;: {}
+    }
+</code></pre></div><h3 id="assigning-tags-to-subscriptions-and-budgets"><a href="#assigning-tags-to-subscriptions-and-budgets" class="header-anchor">#</a> Assigning Tags to subscriptions and Budgets.</h3> <p>While passing the subscriptions parameter, we also pass few meta data for the subscription like Platform, Environment, CostType, Budget and whom we want to alert during any specified events.
+Based on these data, following two resources been deployed on each subscriptions iteratively.</p> <h5 id="subscription-tags"><a href="#subscription-tags" class="header-anchor">#</a> Subscription Tags</h5> <div class="language- extra-class"><pre class="language-text"><code>{
+    &quot;apiVersion&quot;: &quot;2019-10-01&quot;,
+    &quot;type&quot;: &quot;Microsoft.Resources/tags&quot;,
+    &quot;name&quot;: &quot;default&quot;,
+    &quot;properties&quot;: {
+        &quot;tags&quot;: {
+            &quot;Platform&quot;: &quot;[parameters('subscriptions')[copyIndex()].PlatformName]&quot;,
+            &quot;Environment&quot;: &quot;[parameters('subscriptions')[copyIndex()].Environment]&quot;,
+            &quot;CostType&quot;: &quot;[parameters('subscriptions')[copyIndex()].CostType]&quot;
+        }
+    }
+}
+</code></pre></div><h5 id="subscription-budget"><a href="#subscription-budget" class="header-anchor">#</a> Subscription Budget</h5> <div class="language- extra-class"><pre class="language-text"><code> {
+    &quot;type&quot;: &quot;Microsoft.Consumption/budgets&quot;,
+    &quot;apiVersion&quot;: &quot;2019-10-01&quot;,
+    &quot;name&quot;: &quot;[concat('Subscription_Budget_',parameters('subscriptions')[copyIndex()].SubscriptionName)]&quot;,
+    &quot;properties&quot;: {
+        &quot;category&quot;: &quot;Cost&quot;,
+        &quot;timeGrain&quot;: &quot;BillingMonth&quot;,
+        &quot;amount&quot;: &quot;[parameters('subscriptions')[copyIndex()].MonthlyBudget]&quot;,
+        &quot;timePeriod&quot;: {
+            &quot;startDate&quot;: &quot;2020-05-01T00:00:00.0Z&quot;
+        },
+        &quot;notifications&quot;: {
+        }
+    }
+ }
+</code></pre></div><h3 id="conclusion"><a href="#conclusion" class="header-anchor">#</a> Conclusion</h3> <p>With the power of ARM template, we have bootstrapped our tenant. From this you can understand that, we can build entire the tenant from scratch using <strong>Infra as a config</strong>. With the power of Azure Devops, We have also automated the deployment and secured our pipelines with polices.</p> <p><a href="https://github.com/yesoreyeram/azure-deploy" target="_blank" rel="noopener noreferrer">Source Code available here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p> <p><a href="https://sriramajeyam.visualstudio.com/azure-deploy/_build?definitionId=7" target="_blank" rel="noopener noreferrer">Pipelines Available here<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p> <div><br>
+  Cheers, <br> <b>Sriram</b></div></div> <footer class="page-edit"><!----> <!----></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.d14d625b.js" defer></script><script src="/assets/js/2.1b5e1337.js" defer></script><script src="/assets/js/10.952ffb68.js" defer></script><script src="/assets/js/7.c466a33f.js" defer></script>
+  </body>
+</html>
